@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  postgresql:
+    image: postgres
+    container_name: mushunter
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_HOST=localhost
+      - POSTGRES_USER=mushunter
+      - POSTGRES_PASSWORD=3108
+      - POSTGRES_DB=mushunter
+    command: postgres
+    restart: always
+
+  redis:
+    image: redis:alpine3.14
+    container_name: redis-mushunter
+    ports:
+      - '6379:6379'
