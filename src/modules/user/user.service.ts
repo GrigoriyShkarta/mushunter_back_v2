@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponse } from './response';
 
 @Injectable()
@@ -9,7 +8,7 @@ export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<UserResponse> {
-    return this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         email: data.email,
         firstName: data.firstName,
@@ -24,19 +23,27 @@ export class UserService {
     });
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+  async googleAuth(data: CreateUserDto): Promise<boolean> {
+    const existingUser = await this.findByEmail(data.email);
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+    if (!existingUser) {
+      await this.create(data);
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    return true;
   }
 }
