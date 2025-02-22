@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponse } from './response';
@@ -16,7 +16,14 @@ export class UserController {
   }
 
   @Post('google-auth')
-  findOne(@Body() data: CreateUserDto): Promise<boolean> {
+  async findOne(@Body() data: CreateUserDto): Promise<boolean> {
     return this.userService.googleAuth(data);
+  }
+
+  @ApiTags('USER')
+  @ApiResponse({ status: 200, type: UserResponse })
+  @Get('user')
+  async getUser(@Query('id') id: string): Promise<UserResponse> {
+    return this.userService.findById(+id);
   }
 }
