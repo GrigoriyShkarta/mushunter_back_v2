@@ -1,48 +1,82 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as process from 'process';
+import { ConfigService } from '@nestjs/config';
+
+interface TokenPayload {
+  sub: string;
+}
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  generateTokens(userId: string) {
+  generateTokens(userId: string): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     if (!userId) {
       throw new UnauthorizedException('User ID is required');
     }
 
-    const payload = { sub: userId };
+    const payload: TokenPayload = { sub: userId };
 
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: '24h',
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN', '24h'),
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.REFRESH_SECRET,
-      expiresIn: '7d',
+      secret: this.configService.get<string>('REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('REFRESH_EXPIRES_IN', '7d'),
     });
 
     return { accessToken, refreshToken };
   }
 
-  verifyRefreshToken(token: string) {
+  verifyRefreshToken(token: string): TokenPayload {
     if (!token) {
       throw new UnauthorizedException('Refresh token is required');
     }
 
     try {
-      const payload = this.jwtService.verify(token, {
-        secret: process.env.REFRESH_SECRET,
+      const payload = this.jwtService.verify<TokenPayload>(token, {
+        secret: this.configService.get<string>('REFRESH_SECRET'),
       });
 
       if (!payload.sub) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException(
+          'Invalid refresh token: missing user ID',
+        );
       }
 
       return payload;
-    } catch (e) {
+    } catch (error) {
       throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
+
+  verifyAccessToken(token: string): TokenPayload {
+    if (!token) {
+      throw new UnauthorizedException('Access token is required');
+    }
+
+    try {
+      const payload = this.jwtService.verify<TokenPayload>(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+
+      if (!payload.sub) {
+        throw new UnauthorizedException(
+          'Invalid access token: missing user ID',
+        );
+      }
+
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired access token');
     }
   }
 }

@@ -14,10 +14,37 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  email     String   @unique
-  firstName String
-  lastName  String?
+  id          String       @id
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  email       String       @unique
+  firstName   String
+  lastName    String?
+  avatar      String?
+  professions Profession[]
+  styles      Style[]
+  description String?
+  city        City?        @relation(fields: [cityId], references: [id])
+  cityId      Int?
+  telephone   String?
+  links       String[]
+  age         DateTime?
+}
+
+model Profession {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+model Style {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+model City {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
 }
