@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import configuration from './config/config';
 import { FirebaseService } from './modules/firebase/firebase.service';
 import { FirebaseModule } from './modules/firebase/firebase.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { FirebaseModule } from './modules/firebase/firebase.module';
       isGlobal: true,
       cache: true,
     }),
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, JwtStrategy, FirebaseService],

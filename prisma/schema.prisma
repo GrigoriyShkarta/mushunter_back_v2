@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,33 +8,85 @@ datasource db {
 }
 
 model User {
-  id          String       @id
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  email       String       @unique
+  id          String      @id
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  email       String      @unique
   firstName   String
   lastName    String?
   avatar      String?
-  professions Profession[]
+  skills      UserSkill[]
   styles      Style[]
   description String?
-  city        City?        @relation(fields: [cityId], references: [id])
+  city        City?       @relation(fields: [cityId], references: [id])
   cityId      Int?
   telephone   String?
   links       String[]
   age         DateTime?
+  skillId     Int?
+
+  inSearchBand   InSearchBand? @relation("UserToInSearchBand")
+  inSearchBandId Int?
+
+  inSearchMusician InSearchMusician[]
 }
 
-model Profession {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
+model InSearchBand {
+  id          Int     @id @default(autoincrement())
+  userId      String  @unique @map("user_id")
+  skillId     Int     @map("skill_id")
+  description String?
+
+  user   User    @relation("UserToInSearchBand", fields: [userId], references: [id])
+  skill  Skill   @relation(fields: [skillId], references: [id])
+  styles Style[] @relation("InSearchBandToStyle")
+
+  @@map("InSearchBand")
+}
+
+model InSearchMusician {
+  id          Int     @id @default(autoincrement())
+  userId      String  @map("user_id")
+  skillId     Int     @map("skill_id")
+  experience  Int
+  description String?
+
+  user   User    @relation(fields: [userId], references: [id])
+  skill  Skill   @relation(fields: [skillId], references: [id])
+  styles Style[] @relation("InSearchMusicianToStyle")
+
+  @@map("InSearchMusician")
+}
+
+model UserSkill {
+  id          Int     @id @default(autoincrement())
+  userId      String  @map("user_id")
+  skillId     Int     @map("skill_id")
+  experience  Int
+  description String?
+  skill       Skill   @relation(fields: [skillId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, skillId])
+  @@map("UserSkill")
+}
+
+model Skill {
+  id               Int                @id @default(autoincrement())
+  name             String
+  userSkills       UserSkill[]
+  InSearchBand     InSearchBand[]
+  InSearchMusician InSearchMusician[]
+
+  @@map("Skill")
 }
 
 model Style {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
+  id               Int                @id @default(autoincrement())
+  name             String
+  users            User[]
+  inSearchBands    InSearchBand[]     @relation("InSearchBandToStyle")
+  InSearchMusician InSearchMusician[] @relation("InSearchMusicianToStyle")
 }
 
 model City {

@@ -30,6 +30,38 @@ class CityResponse {
   name: string;
 }
 
+class SkillObject {
+  @ApiProperty({ example: 1, description: 'ID скилла' })
+  @IsNumber()
+  id: number;
+
+  @ApiProperty({ example: 'Guitar', description: 'Название скилла' })
+  @IsString()
+  name: string;
+}
+
+class SkillResponse {
+  @ApiProperty({
+    example: { id: 1, name: 'guitar' },
+    description: 'Скилл пользователя',
+    required: false,
+    type: SkillObject,
+  })
+  @ValidateNested()
+  @Type(() => SkillObject)
+  @IsOptional()
+  skill: SkillObject | null;
+
+  @ApiProperty({ example: 1, description: 'Опыт' })
+  @IsNumber()
+  experience: number;
+
+  @ApiProperty({ example: 'Описание опыта', description: 'Описание опыта' })
+  @IsOptional()
+  @IsString()
+  description?: string | null;
+}
+
 export class UserResponse {
   @ApiProperty({ example: 'user-123', description: 'ID пользователя' })
   @IsString()
@@ -118,4 +150,33 @@ export class UserResponse {
   @Type(() => CityResponse)
   @IsOptional()
   city: CityResponse | null;
+
+  @ApiProperty({
+    example: [
+      {
+        skill: {
+          id: 1,
+          name: 'guitar',
+        },
+        experience: 5,
+        description: 'Играю на гитаре 5 лет',
+      },
+      {
+        skill: {
+          id: 2,
+          name: 'piano',
+        },
+        experience: 3,
+        description: 'Играю на пианино 3 года',
+      },
+    ],
+    description: 'Скиллы пользователя',
+    required: false,
+    type: [SkillResponse],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SkillResponse)
+  @IsOptional()
+  skills: SkillResponse[] | null;
 }

@@ -4,7 +4,7 @@ import {
   IsArray,
   IsDate,
   IsNumber,
-  ValidateNested,
+  IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -13,7 +13,7 @@ export class ChangeMainInfoDto {
   @ApiProperty({
     example: 'John',
     description: 'Имя пользователя',
-    required: false,
+    required: true,
   })
   @IsOptional()
   @IsString()
@@ -22,7 +22,7 @@ export class ChangeMainInfoDto {
   @ApiProperty({
     example: 'Doe',
     description: 'Фамилия пользователя',
-    required: false,
+    required: true,
   })
   @IsOptional()
   @IsString()
@@ -75,11 +75,12 @@ export class ChangeMainInfoDto {
   })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
+  @IsInt({ each: true })
+  @Type(() => Number)
   styles?: number[];
 
   @ApiProperty({ example: 1, description: 'ID города', required: false })
   @IsOptional()
   @IsNumber()
-  cityId?: number;
+  city?: number;
 }
